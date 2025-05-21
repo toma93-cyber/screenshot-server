@@ -1,6 +1,5 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
-const { executablePath } = require('puppeteer');
 
 const app = express();
 
@@ -8,9 +7,20 @@ app.get('/screenshot', async (req, res) => {
   const { url, width, height } = req.query;
   if (!url) return res.status(400).send('Missing url param');
 
+  // Modified browser launch configuration for Render
   const browser = await puppeteer.launch({
-    executablePath: executablePath(),
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu'
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
+    headless: true
   });
 
   try {
