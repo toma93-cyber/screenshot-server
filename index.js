@@ -7,20 +7,14 @@ app.get('/screenshot', async (req, res) => {
   const { url, width, height } = req.query;
   if (!url) return res.status(400).send('Missing url param');
 
-  // Modified browser launch configuration for Render
+  // Use puppeteer's bundled Chrome
   const browser = await puppeteer.launch({
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu'
+      '--disable-dev-shm-usage'
     ],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable',
-    headless: true
+    // Don't specify executablePath to use bundled Chrome
   });
 
   try {
@@ -35,6 +29,7 @@ app.get('/screenshot', async (req, res) => {
     res.set('Content-Type', 'image/png');
     res.send(screenshot);
   } catch (err) {
+    console.error(err);
     await browser.close();
     res.status(500).send('Failed to take screenshot: ' + err.message);
   }
