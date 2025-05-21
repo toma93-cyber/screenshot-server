@@ -1,5 +1,6 @@
 const express = require('express');
 const puppeteer = require('puppeteer');
+const { executablePath } = require('puppeteer');
 
 const app = express();
 
@@ -8,16 +9,15 @@ app.get('/screenshot', async (req, res) => {
   if (!url) return res.status(400).send('Missing url param');
 
   const browser = await puppeteer.launch({
+    executablePath: executablePath(),
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
+
   try {
     const page = await browser.newPage();
-
-    // Use user-supplied width/height or default to 1920x1080
     const w = parseInt(width) || 1920;
     const h = parseInt(height) || 1080;
     await page.setViewport({ width: w, height: h });
-
     await page.goto(url, { waitUntil: 'networkidle2' });
     const screenshot = await page.screenshot({ fullPage: false });
     await browser.close();
